@@ -223,6 +223,52 @@ def get_course(id):
     return jsonify({"course": course.to_dict()}), 200
 
 
+@app.route("/api/courses/", methods=["PUT"])
+def update_course(id):
+    course = Course.query.get(id)
+    if not course:
+        return jsonify({"error": f"Course with id {id} not found."}), 404
+
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided."}), 400
+
+    if "course_title" in data:
+        existing = Course.query.filter_by(course_title=data["course_title"]).first()
+        if existing and existing.id != id:
+            return jsonify({"error": "Course title already exists."}), 409
+        course.course_title = data["course_title"]
+
+    if "course_fee" in data:
+        if not isinstance(data["course_fee"], (int, float)) or data["course_fee"] <= 0:
+            return jsonify({"error": "course_fee must be a positive number."}), 400
+        course.course_fee = data["course_fee"]
+
+    if "duration_months" in data:
+        if not isinstance(data["duration_months"], int) or data["duration_months"] <= 0:
+            return jsonify({"error": "duration_months must be a positive integer."}), 400
+        course.duration_months = data["duration_months"]
+
+    if "description" in data:
+        course.description = data["description"]
+
+    if "is_available" in data:
+        course.is_available = data["is_available"]
+
+    db.session.commit()
+    return jsonify({"message": "Course updated.", "course": course.to_dict()}), 200
+
+
+@app.route("/api/courses/", methods=["DELETE"])
+def delete_course(id):
+    course = Course.query.get(id)
+    if not course:
+        return jsonify({"error": f"Course with id {id} not found."}), 404
+
+    db.session.delete(course)
+    db.session.commit()
+    return jsonify({"message": f"Course '{course.course_title}' deleted successfully."}), 200
+
 if __name__ == "__main__":
     app.run(debug=True)
     
