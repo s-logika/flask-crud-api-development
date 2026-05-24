@@ -93,6 +93,13 @@ def get_students():
     return jsonify({"students": [s.to_dict() for s in students]}), 200
 
 
+@app.route("/api/students/", methods=["GET"])
+def get_student(id):
+    student = Student.query.get(id)
+    if not student:
+        return jsonify({"error": f"Student with id {id} not found."}), 404
+    return jsonify({"student": student.to_dict()}), 200
+
 if __name__ == "__main__":
     app.run(debug=True)
     
