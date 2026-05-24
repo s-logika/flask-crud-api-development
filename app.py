@@ -170,10 +170,48 @@ def delete_student(id):
     db.session.commit()
     return jsonify({"message": f"Student '{student.full_name}' deleted successfully."}), 200
 
+
+# --- Course Routes ---
+
+@app.route("/api/courses", methods=["POST"])
+def create_course():
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "No data provided."}), 400
+    if not data.get("course_title"):
+        return jsonify({"error": "course_title is required."}), 400
+    if data.get("course_fee") is None:
+        return jsonify({"error": "course_fee is required."}), 400
+    if data.get("duration_months") is None:
+        return jsonify({"error": "duration_months is required."}), 400
+
+    if not isinstance(data["course_fee"], (int, float)) or data["course_fee"] <= 0:
+        return jsonify({"error": "course_fee must be a positive number."}), 400
+    if not isinstance(data["duration_months"], int) or data["duration_months"] <= 0:
+        return jsonify({"error": "duration_months must be a positive integer."}), 400
+
+    existing = Course.query.filter_by(course_title=data["course_title"]).first()
+    if existing:
+        return jsonify({"error": "Course title already exists."}), 409
+
+    course = Course(
+        course_title    = data["course_title"],
+        course_fee      = data["course_fee"],
+        duration_months = data["duration_months"],
+        description     = data.get("description"),
+        is_available    = data.get("is_available", True),
+    )
+    db.session.add(course)
+    db.session.commit()
+
+    return jsonify({"message": "Course created.", "course": course.to_dict()}), 201
+
+
 if __name__ == "__main__":
     app.run(debug=True)
     
     
-# with app.app_context():
-#     db.create_all()
-#     print("Tables created!")
+with app.app_context():
+    db.create_all()
+    print("Tables created!")
