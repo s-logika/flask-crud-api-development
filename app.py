@@ -100,6 +100,50 @@ def get_student(id):
         return jsonify({"error": f"Student with id {id} not found."}), 404
     return jsonify({"student": student.to_dict()}), 200
 
+
+@app.route("/api/students/", methods=["PUT"])
+def update_student(id):
+    student = Student.query.get(id)
+    if not student:
+        return jsonify({"error": f"Student with id {id} not found."}), 404
+
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided."}), 400
+
+    if "full_name" in data:
+        if not data["full_name"]:
+            return jsonify({"error": "full_name cannot be empty."}), 400
+        student.full_name = data["full_name"]
+
+    if "email" in data:
+        existing = Student.query.filter_by(email=data["email"]).first()
+        if existing and existing.id != id:
+            return jsonify({"error": "Email already exists."}), 409
+        student.email = data["email"]
+
+    if "age" in data:
+        if not isinstance(data["age"], int) or data["age"] <= 0:
+            return jsonify({"error": "age must be a positive integer."}), 400
+        student.age = data["age"]
+
+    if "cgpa" in data:
+        student.cgpa = data["cgpa"]
+
+    if "is_active" in data:
+        student.is_active = data["is_active"]
+
+    if "joined_date" in data:
+        try:
+            student.joined_date = datetime.strptime(data["joined_date"], "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"error": "joined_date must be YYYY-MM-DD format."}), 400
+
+    db.session.commit()
+    return jsonify({"message": "Student updated.", "student": student.to_dict()}), 200
+
+
+
 if __name__ == "__main__":
     app.run(debug=True)
     
