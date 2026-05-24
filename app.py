@@ -207,6 +207,21 @@ def create_course():
 
     return jsonify({"message": "Course created.", "course": course.to_dict()}), 201
 
+@app.route("/api/courses", methods=["GET"])
+def get_courses():
+    courses = Course.query.all()
+    if not courses:
+        return jsonify({"message": "No courses found.", "courses": []}), 200
+    return jsonify({"courses": [c.to_dict() for c in courses]}), 200
+
+
+@app.route("/api/courses/", methods=["GET"])
+def get_course(id):
+    course = Course.query.get(id)
+    if not course:
+        return jsonify({"error": f"Course with id {id} not found."}), 404
+    return jsonify({"course": course.to_dict()}), 200
+
 
 if __name__ == "__main__":
     app.run(debug=True)
