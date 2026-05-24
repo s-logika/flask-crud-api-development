@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 import os
-from datetime import datetime, date
+from datetime import datetime
 
 load_dotenv()
 
@@ -15,6 +15,11 @@ app.config["SQLALCHEMY_DATABASE_URI"] = (
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+
+
+# ─────────────────────────────────────────
+#  Models
+# ─────────────────────────────────────────
 
 class Student(db.Model):
     __tablename__ = "students"
@@ -40,16 +45,17 @@ class Student(db.Model):
             "created_at":  str(self.created_at),
         }
 
+
 class Course(db.Model):
     __tablename__ = "courses"
 
-    id               = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    course_title     = db.Column(db.String(100), nullable=False, unique=True)
-    course_fee       = db.Column(db.Float, nullable=False)
-    duration_months  = db.Column(db.Integer, nullable=False)
-    description      = db.Column(db.Text, nullable=True)
-    is_available     = db.Column(db.Boolean, default=True)
-    created_at       = db.Column(db.DateTime, default=datetime.utcnow)
+    id              = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    course_title    = db.Column(db.String(100), nullable=False, unique=True)
+    course_fee      = db.Column(db.Float, nullable=False)
+    duration_months = db.Column(db.Integer, nullable=False)
+    description     = db.Column(db.Text, nullable=True)
+    is_available    = db.Column(db.Boolean, default=True)
+    created_at      = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
         return {
@@ -62,7 +68,11 @@ class Course(db.Model):
             "created_at":      str(self.created_at),
         }
 
-# --- Student Routes ---
+
+# ─────────────────────────────────────────
+#  Student Routes
+# ─────────────────────────────────────────
+
 @app.route("/api/students", methods=["POST"])
 def create_student():
     data = request.get_json()
@@ -103,6 +113,7 @@ def create_student():
 
     return jsonify({"message": "Student created.", "student": student.to_dict()}), 201
 
+
 @app.route("/api/students", methods=["GET"])
 def get_students():
     students = Student.query.all()
@@ -111,7 +122,7 @@ def get_students():
     return jsonify({"students": [s.to_dict() for s in students]}), 200
 
 
-@app.route("/api/students/", methods=["GET"])
+@app.route("/api/students/<int:id>", methods=["GET"])
 def get_student(id):
     student = Student.query.get(id)
     if not student:
@@ -119,7 +130,7 @@ def get_student(id):
     return jsonify({"student": student.to_dict()}), 200
 
 
-@app.route("/api/students/", methods=["PUT"])
+@app.route("/api/students/<int:id>", methods=["PUT"])
 def update_student(id):
     student = Student.query.get(id)
     if not student:
@@ -160,7 +171,8 @@ def update_student(id):
     db.session.commit()
     return jsonify({"message": "Student updated.", "student": student.to_dict()}), 200
 
-@app.route("/api/students/", methods=["DELETE"])
+
+@app.route("/api/students/<int:id>", methods=["DELETE"])
 def delete_student(id):
     student = Student.query.get(id)
     if not student:
@@ -171,7 +183,9 @@ def delete_student(id):
     return jsonify({"message": f"Student '{student.full_name}' deleted successfully."}), 200
 
 
-# --- Course Routes ---
+# ─────────────────────────────────────────
+#  Course Routes
+# ─────────────────────────────────────────
 
 @app.route("/api/courses", methods=["POST"])
 def create_course():
@@ -207,6 +221,7 @@ def create_course():
 
     return jsonify({"message": "Course created.", "course": course.to_dict()}), 201
 
+
 @app.route("/api/courses", methods=["GET"])
 def get_courses():
     courses = Course.query.all()
@@ -215,7 +230,7 @@ def get_courses():
     return jsonify({"courses": [c.to_dict() for c in courses]}), 200
 
 
-@app.route("/api/courses/", methods=["GET"])
+@app.route("/api/courses/<int:id>", methods=["GET"])
 def get_course(id):
     course = Course.query.get(id)
     if not course:
@@ -223,7 +238,7 @@ def get_course(id):
     return jsonify({"course": course.to_dict()}), 200
 
 
-@app.route("/api/courses/", methods=["PUT"])
+@app.route("/api/courses/<int:id>", methods=["PUT"])
 def update_course(id):
     course = Course.query.get(id)
     if not course:
@@ -259,7 +274,7 @@ def update_course(id):
     return jsonify({"message": "Course updated.", "course": course.to_dict()}), 200
 
 
-@app.route("/api/courses/", methods=["DELETE"])
+@app.route("/api/courses/<int:id>", methods=["DELETE"])
 def delete_course(id):
     course = Course.query.get(id)
     if not course:
@@ -269,10 +284,14 @@ def delete_course(id):
     db.session.commit()
     return jsonify({"message": f"Course '{course.course_title}' deleted successfully."}), 200
 
-if __name__ == "__main__":
-    app.run(debug=True)
-    
-    
+
+# ─────────────────────────────────────────
+#  Run
+# ─────────────────────────────────────────
+
 with app.app_context():
     db.create_all()
-    print("Tables created!")
+    print("Tables ready.")
+
+if __name__ == "__main__":
+    app.run(debug=True)
