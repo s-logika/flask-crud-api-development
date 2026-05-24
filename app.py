@@ -41,9 +41,52 @@ class Student(db.Model):
             "created_at":  str(self.created_at),
         }
 
-@app.route("/")
-def index():
-    return "Flask is running!"
+from flask import Flask, request, jsonify
+
+# --- Student Routes ---
+
+@app.route("/api/students", methods=["POST"])
+def create_student():
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "No data provided."}), 400
+    if not data.get("full_name"):
+        return jsonify({"error": "full_name is required."}), 400
+    if not data.get("email"):
+        return jsonify({"error": "email is required."}), 400
+    if data.get("age") is None:
+        return jsonify({"error": "age is required."}), 400
+    if not data.get("joined_date"):
+        return jsonify({"error": "joined_date is required."}), 400
+
+    if not isinstance(data["age"], int) or data["age"] <= 0:
+        return jsonify({"error": "age must be a positive integer."}), 400
+
+    existing = Student.query.filter_by(email=data["email"]).first()
+    if existing:
+        return jsonify({"error": "Email already exists."}), 409
+
+    try:
+        joined = datetime.strptime(data["joined_date"], "%Y-%m-%d").date()
+    except ValueError:
+        return jsonify({"error": "joined_date must be YYYY-MM-DD format."}), 400
+
+    student = Student(
+        full_name   = data["full_name"],
+        email       = data["email"],
+        age         = data["age"],
+        cgpa        = data.get("cgpa", 0.0),
+        is_active   = data.get("is_active", True),
+        joined_date = joined,
+    )
+    db.session.add(student)
+    db.session.commit()
+
+    return jsonify({"message": "Student created.", "student": student.to_dict()}), 201
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
