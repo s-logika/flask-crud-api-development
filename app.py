@@ -43,8 +43,8 @@ class Student(db.Model):
 
 from flask import Flask, request, jsonify
 
-# --- Student Routes ---
 
+# --- Student Routes ---
 @app.route("/api/students", methods=["POST"])
 def create_student():
     data = request.get_json()
@@ -85,7 +85,12 @@ def create_student():
 
     return jsonify({"message": "Student created.", "student": student.to_dict()}), 201
 
-
+@app.route("/api/students", methods=["GET"])
+def get_students():
+    students = Student.query.all()
+    if not students:
+        return jsonify({"message": "No students found.", "students": []}), 200
+    return jsonify({"students": [s.to_dict() for s in students]}), 200
 
 
 if __name__ == "__main__":
