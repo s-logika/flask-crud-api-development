@@ -142,7 +142,15 @@ def update_student(id):
     db.session.commit()
     return jsonify({"message": "Student updated.", "student": student.to_dict()}), 200
 
+@app.route("/api/students/", methods=["DELETE"])
+def delete_student(id):
+    student = Student.query.get(id)
+    if not student:
+        return jsonify({"error": f"Student with id {id} not found."}), 404
 
+    db.session.delete(student)
+    db.session.commit()
+    return jsonify({"message": f"Student '{student.full_name}' deleted successfully."}), 200
 
 if __name__ == "__main__":
     app.run(debug=True)
