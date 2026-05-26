@@ -4,21 +4,44 @@ A REST API built with **Flask**, **MySQL**, and **SQLAlchemy ORM** that manages 
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-flask_crud_api/
-├── app.py
+crud-api-dev/
 ├── .env               ← you create this (not on GitHub)
 ├── .gitignore
-└── requirements.txt
+├── README.md
+├── requirements.txt
+├── run.py
+└── app/
+    ├── __init__.py
+    ├── config.py
+    ├── models/
+    │   ├── __init__.py
+    │   ├── student_model.py
+    │   └── course_model.py
+    ├── controllers/
+    │   ├── __init__.py
+    │   ├── student_controller.py
+    │   └── course_controller.py
+    └── routes/
+        ├── __init__.py
+        ├── student_routes.py
+        └── course_routes.py
 ```
+
+| File / Folder | Purpose |
+| --- | --- |
+| `run.py` | Entry point — starts the Flask app |
+| `app/__init__.py` | App factory, initializes DB, registers blueprints |
+| `app/config.py` | Database config loaded from `.env` |
+| `app/models/` | SQLAlchemy model definitions |
+| `app/controllers/` | Business logic and DB operations |
+| `app/routes/` | Flask Blueprints — URL routing |
 
 ---
 
-## ⚙️ Requirements
-
-Make sure you have the following installed on your machine:
+## Requirements
 
 - Python 3.8+
 - MySQL Server
@@ -26,31 +49,31 @@ Make sure you have the following installed on your machine:
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/flask_crud_api.git
-cd flask_crud_api
+git clone https://github.com/s-logika/flask-crud-api-development.git
+cd flask-crud-api-development
 ```
 
 ### 2. Create and activate virtual environment
 
 ```bash
-python -m venv venv
+python -m venv .venv
 ```
 
 **Windows:**
 
 ```bash
-venv\Scripts\activate
+.venv\Scripts\activate
 ```
 
 **Mac / Linux:**
 
 ```bash
-source venv/bin/activate
+source .venv/bin/activate
 ```
 
 ### 3. Install dependencies
@@ -61,15 +84,13 @@ pip install -r requirements.txt
 
 ### 4. Create the database in MySQL
 
-Open MySQL Workbench or your MySQL terminal and run:
-
 ```sql
 CREATE DATABASE flask_crud_db;
 ```
 
 ### 5. Create your `.env` file
 
-Create a file named `.env` in the root of the project (same folder as `app.py`) and add your MySQL credentials:
+Create a file named `.env` in the project root and add your MySQL credentials:
 
 ```
 DB_HOST=localhost
@@ -78,26 +99,27 @@ DB_PASSWORD=your_mysql_password
 DB_NAME=flask_crud_db
 ```
 
-> ⚠️ **Important:** Never share your `.env` file. It is already listed in `.gitignore` and will not be pushed to GitHub.
+> **Note:** Never share your `.env` file. It is listed in `.gitignore` and will not be pushed to GitHub.
 
 ### 6. Run the application
 
 ```bash
-python app.py
+python run.py
 ```
 
 You should see:
 
 ```
+Tables ready.
  * Running on http://127.0.0.1:5000
  * Debug mode: on
 ```
 
-The database tables will be created automatically when the app starts.
+Tables are created automatically on startup.
 
 ---
 
-## 🧪 API Testing
+## API Testing
 
 Use **Thunder Client** (VS Code extension) or **Postman** to test the endpoints.
 
@@ -105,7 +127,7 @@ Use **Thunder Client** (VS Code extension) or **Postman** to test the endpoints.
 
 ---
 
-## 👩‍🎓 Student Endpoints
+## Student Endpoints
 
 ### POST `/api/students` — Create a student
 
@@ -141,21 +163,19 @@ Use **Thunder Client** (VS Code extension) or **Postman** to test the endpoints.
 
 **Validation errors:**
 
-| Scenario              | Status | Response                                              |
-| --------------------- | ------ | ----------------------------------------------------- |
-| Missing `full_name`   | 400    | `{"error": "full_name is required."}`                 |
-| Missing `email`       | 400    | `{"error": "email is required."}`                     |
-| Missing `age`         | 400    | `{"error": "age is required."}`                       |
-| Missing `joined_date` | 400    | `{"error": "joined_date is required."}`               |
-| Negative age          | 400    | `{"error": "age must be a positive integer."}`        |
-| Duplicate email       | 409    | `{"error": "Email already exists."}`                  |
-| Wrong date format     | 400    | `{"error": "joined_date must be YYYY-MM-DD format."}` |
+| Scenario | Status | Response |
+| --- | --- | --- |
+| Missing `full_name` | 400 | `{"error": "full_name is required."}` |
+| Missing `email` | 400 | `{"error": "email is required."}` |
+| Missing `age` | 400 | `{"error": "age is required."}` |
+| Missing `joined_date` | 400 | `{"error": "joined_date is required."}` |
+| Negative age | 400 | `{"error": "age must be a positive integer."}` |
+| Duplicate email | 409 | `{"error": "Email already exists."}` |
+| Wrong date format | 400 | `{"error": "joined_date must be YYYY-MM-DD format."}` |
 
 ---
 
 ### GET `/api/students` — Get all students
-
-No request body needed.
 
 **Success response — 200:**
 
@@ -189,9 +209,7 @@ Example: `GET /api/students/1`
 **Not found — 404:**
 
 ```json
-{
-    "error": "Student with id 1 not found."
-}
+{ "error": "Student with id 1 not found." }
 ```
 
 ---
@@ -220,11 +238,11 @@ Only send the fields you want to update:
 
 **Validation errors:**
 
-| Scenario           | Status | Response                                    |
-| ------------------ | ------ | ------------------------------------------- |
-| ID not found       | 404    | `{"error": "Student with id 1 not found."}` |
-| Empty request body | 400    | `{"error": "No data provided."}`            |
-| Duplicate email    | 409    | `{"error": "Email already exists."}`        |
+| Scenario | Status | Response |
+| --- | --- | --- |
+| ID not found | 404 | `{"error": "Student with id 1 not found."}` |
+| Empty request body | 400 | `{"error": "No data provided."}` |
+| Duplicate email | 409 | `{"error": "Email already exists."}` |
 
 ---
 
@@ -235,22 +253,18 @@ Example: `DELETE /api/students/1`
 **Success response — 200:**
 
 ```json
-{
-    "message": "Student 'Ali Hassan' deleted successfully."
-}
+{ "message": "Student 'Ali Hassan' deleted successfully." }
 ```
 
 **Not found — 404:**
 
 ```json
-{
-    "error": "Student with id 1 not found."
-}
+{ "error": "Student with id 1 not found." }
 ```
 
 ---
 
-## 📚 Course Endpoints
+## Course Endpoints
 
 ### POST `/api/courses` — Create a course
 
@@ -284,20 +298,18 @@ Example: `DELETE /api/students/1`
 
 **Validation errors:**
 
-| Scenario                  | Status | Response                                                   |
-| ------------------------- | ------ | ---------------------------------------------------------- |
-| Missing `course_title`    | 400    | `{"error": "course_title is required."}`                   |
-| Missing `course_fee`      | 400    | `{"error": "course_fee is required."}`                     |
-| Missing `duration_months` | 400    | `{"error": "duration_months is required."}`                |
-| Negative fee              | 400    | `{"error": "course_fee must be a positive number."}`       |
-| Zero or negative duration | 400    | `{"error": "duration_months must be a positive integer."}` |
-| Duplicate title           | 409    | `{"error": "Course title already exists."}`                |
+| Scenario | Status | Response |
+| --- | --- | --- |
+| Missing `course_title` | 400 | `{"error": "course_title is required."}` |
+| Missing `course_fee` | 400 | `{"error": "course_fee is required."}` |
+| Missing `duration_months` | 400 | `{"error": "duration_months is required."}` |
+| Negative fee | 400 | `{"error": "course_fee must be a positive number."}` |
+| Zero or negative duration | 400 | `{"error": "duration_months must be a positive integer."}` |
+| Duplicate title | 409 | `{"error": "Course title already exists."}` |
 
 ---
 
 ### GET `/api/courses` — Get all courses
-
-No request body needed.
 
 **Success response — 200:**
 
@@ -331,9 +343,7 @@ Example: `GET /api/courses/1`
 **Not found — 404:**
 
 ```json
-{
-    "error": "Course with id 1 not found."
-}
+{ "error": "Course with id 1 not found." }
 ```
 
 ---
@@ -362,11 +372,11 @@ Only send the fields you want to update:
 
 **Validation errors:**
 
-| Scenario           | Status | Response                                    |
-| ------------------ | ------ | ------------------------------------------- |
-| ID not found       | 404    | `{"error": "Course with id 1 not found."}`  |
-| Empty request body | 400    | `{"error": "No data provided."}`            |
-| Duplicate title    | 409    | `{"error": "Course title already exists."}` |
+| Scenario | Status | Response |
+| --- | --- | --- |
+| ID not found | 404 | `{"error": "Course with id 1 not found."}` |
+| Empty request body | 400 | `{"error": "No data provided."}` |
+| Duplicate title | 409 | `{"error": "Course title already exists."}` |
 
 ---
 
@@ -377,39 +387,35 @@ Example: `DELETE /api/courses/1`
 **Success response — 200:**
 
 ```json
-{
-    "message": "Course 'Python Basics' deleted successfully."
-}
+{ "message": "Course 'Python Basics' deleted successfully." }
 ```
 
 **Not found — 404:**
 
 ```json
-{
-    "error": "Course with id 1 not found."
-}
+{ "error": "Course with id 1 not found." }
 ```
 
 ---
 
-## 📋 All Endpoints Summary
+## All Endpoints Summary
 
-| Method | Endpoint             | Description      |
-| ------ | -------------------- | ---------------- |
-| POST   | `/api/students`      | Create a student |
-| GET    | `/api/students`      | Get all students |
-| GET    | `/api/students/<id>` | Get one student  |
-| PUT    | `/api/students/<id>` | Update a student |
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| POST | `/api/students` | Create a student |
+| GET | `/api/students` | Get all students |
+| GET | `/api/students/<id>` | Get one student |
+| PUT | `/api/students/<id>` | Update a student |
 | DELETE | `/api/students/<id>` | Delete a student |
-| POST   | `/api/courses`       | Create a course  |
-| GET    | `/api/courses`       | Get all courses  |
-| GET    | `/api/courses/<id>`  | Get one course   |
-| PUT    | `/api/courses/<id>`  | Update a course  |
-| DELETE | `/api/courses/<id>`  | Delete a course  |
+| POST | `/api/courses` | Create a course |
+| GET | `/api/courses` | Get all courses |
+| GET | `/api/courses/<id>` | Get one course |
+| PUT | `/api/courses/<id>` | Update a course |
+| DELETE | `/api/courses/<id>` | Delete a course |
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Python** — programming language
 - **Flask** — web framework
